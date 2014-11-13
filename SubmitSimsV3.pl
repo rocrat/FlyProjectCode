@@ -57,31 +57,32 @@ while( my $line = <INFIL>){#read in dSSLS file
 			my $sim = "Sim";
 			my $id1 = $fileid;
 			
-			open(PBSscript,">$fileid.simsubmit");
-			print PBSscript "#!/bin/bash\n";
-			print PBSscript "#PBS -N $id1\n";
-			print PBSscript "#PBS -W group_list=whiteman\n";
-			print PBSscript "#PBS -l jobtype=small_mpi\n";
-			print PBSscript "#PBS -l select=1:ncpus=2:mem=3600mb\n";
-			print PBSscript "#PBS -l place=pack:shared\n";
-			print PBSscript "#PBS -l pvmem=25598mb\n";
-			print PBSscript "#PBS -l cput=300:00:0\n";
-			print PBSscript "#PBS -l walltime=150:00:0\n";
-			print PBSscript "#PBS -q standard\n";
-			print PBSscript "#PBS -M dlaroche\@email.arizona.edu\n\n";
-			print PBSscript "cd \$PBS_O_WORKDIR # this cd's into the directory you submitted the script from\n";
-			print PBSscript "time pb -d $fileid.phy -T SppTreeForSims.tre -cat -gtr -x 10 10000 -s /xdisk/rlapoint/SimsV3/$fileid.phy_1 &\n";#?
-			print PBSscript "time pb -d $fileid.phy -T SppTreeForSims.tre -cat -gtr -x 10 10000 -s /xdisk/rlapoint/SimsV3/$fileid.phy_2 &\n";#?
-			print PBSscript "wait";
-			close PBSscript;
+			#open(PBSscript,">$fileid.simsubmit");
+			#print PBSscript "#!/bin/bash\n";
+			#print PBSscript "#PBS -N $id1\n";
+			#print PBSscript "#PBS -W group_list=whiteman\n";
+			#print PBSscript "#PBS -l jobtype=small_mpi\n";
+			#print PBSscript "#PBS -l select=1:ncpus=2:mem=3600mb\n";
+			#print PBSscript "#PBS -l place=pack:shared\n";
+			#print PBSscript "#PBS -l pvmem=25598mb\n";
+			#print PBSscript "#PBS -l cput=300:00:0\n";
+			#print PBSscript "#PBS -l walltime=150:00:0\n";
+			#print PBSscript "#PBS -q standard\n";
+			#print PBSscript "#PBS -M dlaroche\@email.arizona.edu\n\n";
+			#print PBSscript "cd \$PBS_O_WORKDIR # this cd's into the directory you submitted the script from\n";
+			#print PBSscript "time pb -d $fileid.phy -T SppTreeForSims.tre -cat -gtr -x 10 10000 -s /xdisk/rlapoint/SimsV3/$fileid.phy_1 &\n";#?
+			#print PBSscript "time pb -d $fileid.phy -T SppTreeForSims.tre -cat -gtr -x 10 10000 -s /xdisk/rlapoint/SimsV3/$fileid.phy_2 &\n";#?
+			#print PBSscript "wait";
+			#close PBSscript;
 			#end making pbs script
-			print PBSpred "time ppred -x 1000 10 /xdisk/rlapoint/SimsV3/$fileid.phy_1\n";
-			print PBSpred "time ppred -x 1000 10 /xdisk/rlapoint/SimsV3/$fileid.phy_2\n";
+			#Make 500 predicted alignments from the end of each parallel chain
+			print PBSpred "time ppred -x 5000 10 /xdisk/rlapoint/SimsV3/$fileid.phy_1\n";
+			print PBSpred "time ppred -x 5000 10 /xdisk/rlapoint/SimsV3/$fileid.phy_2\n";
 			
 			
 			#end making ppred script
 			my $cmd = "qsub $fileid.simsubmit";#submit pbs script just made
-			system($cmd);#actual submission of command
+			#system($cmd);#actual submission of command
 			print "Submitted $fileid.simsubmit to the HPC\n";
 		}
 }

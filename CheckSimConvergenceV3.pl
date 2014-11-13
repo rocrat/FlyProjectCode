@@ -14,6 +14,7 @@ my $count = 0;
 print "Checking convergence between paired chains...\n";
 my $ext1 = ".phy_1";
 my $ext2 = ".phy_2";
+my $extout = ".check";
 open (INFIL,$file);
 
 while( my $line = <INFIL>){#read in dSSLS file
@@ -25,10 +26,10 @@ while( my $line = <INFIL>){#read in dSSLS file
 			$count++; 
 			my $chainid1 = $fileid.$ext1;
 			my $chainid2 = $fileid.$ext2;
-			
+			my $outfile = $fileid.$extout;
 			print "Checking convergence of $fileid \n";
-			my $bpcmd = "bpcomp -o $fileid  /xdisk/rlapoint/SimsV3/$chainid1 /xdisk/rlapoint/SimsV3/$chainid2";
-			my $tracecmd = "tracecomp -o $fileid  /xdisk/rlapoint/SimsV3/$chainid1 /xdisk/rlapoint/SimsV3/$chainid2";
+			my $bpcmd = "bpcomp -x 5000 1 -o $outfile  /xdisk/rlapoint/SimsV3/$chainid1 /xdisk/rlapoint/SimsV3/$chainid2";
+			my $tracecmd = "tracecomp -x 5000  1 -o $outfile  /xdisk/rlapoint/SimsV3/$chainid1 /xdisk/rlapoint/SimsV3/$chainid2";
 			system($bpcmd);
 			system($tracecmd);
 		}
