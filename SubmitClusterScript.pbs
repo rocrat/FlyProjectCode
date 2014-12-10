@@ -1,0 +1,17 @@
+#!/bin/bash
+#PBS -N TestClustering
+#PBS -W group_list=whiteman
+#PBS -l jobtype=small_mpi
+#PBS -l select=1:ncpus=10:mem=19000mb
+#PBS -l place=pack:shared
+#PBS -l pvmem=25598mb
+#PBS -l cput=1000:00:0
+#PBS -l walltime=100:00:0
+#PBS -q standard
+#PBS -M dlaroche@email.arizona.edu
+
+cd $PBS_O_WORKDIR # this cd's into the directory you submitted the script from
+
+module load R
+
+Rscript FindGeneClusters.R 
