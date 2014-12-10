@@ -1,8 +1,8 @@
 #This script takes a initial HMMER results between pairs of spp. which must be concatenated together into a single file using the 799 script
 library(MASS)
 library(linkcomm)
-dat<-read.delim("/xdisk/rlapoint/CombinedHMMER.csv",sep=";",header=TRUE)
-dat<-dat[dat$id1!=dat$id2]
+dat<-read.delim("/xdisk/rlapoint/InitialHMMERresultsV3/CombinedHMMER.csv",sep=";",header=TRUE)
+dat<-dat[as.character(dat$id1)!=as.character(dat$id2),]
 #subset data for testing
 dat$weight<-1-dat$evalue
 lc<-getLinkCommunities(dat[,c(1,2,4)])
