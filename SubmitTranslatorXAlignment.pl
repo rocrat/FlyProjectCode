@@ -6,10 +6,10 @@ use strict;
 
 my $folder = $ARGV[0]; #the first argument is the path of the folder where the fasta files live
 my @files = `ls $folder | grep '.\.fasta'`;
-my $outfolder ="/xdisk/rlapoint/TranslatorAlignments";
-open(OUT,">submitAlignments.pbs");
+my $outfolder ="/xdisk/rlapoint/TranslatorClustAlignments";
+open(OUT,">submitClustAlignments.pbs");
 print OUT "#!/bin/bash\n";
-print OUT "#PBS -N TransAlign\n";
+print OUT "#PBS -N TransAlignCl\n";
 print OUT "#PBS -W group_list=whiteman\n";
 print OUT "#PBS -l jobtype=small_mpi\n";
 print OUT "#PBS -l select=1:ncpus=12:mem=24000mb\n";
