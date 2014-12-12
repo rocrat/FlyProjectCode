@@ -10,9 +10,11 @@ my $clustfile = $ARGV[1];
 
 open(LIST,$listfile);
 open(CLUST,$clustfile);
-open(OUT,">CombinedRecipClust.list")
+open(OUT,">CombinedRecipClust.list");
+open(KEY,">CombinedRecipClust.key");
 #make hash for cluster file
 my %clusthsh;
+my $n=0;
 while (my $line=<CLUST>){
 	chomp($line);
 	my $num;
@@ -20,24 +22,27 @@ while (my $line=<CLUST>){
 	#file starts with row numbers which are all unique
 	if($line =~ /(\d+),(.+)/){
 		$num = $1;
-		$spp = $2;
 	}
-	my @cols = split /;/, $spp;
-	foreach my $col (@cols){#this will make a key->feild pair for each gene id in the cluster so the cluster will be represented as many times as there are genes, this is necessary because we don't know which gene will be in the recip file but we will need to account for this when we make the combined file
+	my $oldline = $line;
+	$line =~ s/\d+,//;#remove row number from line
+	$line =~ s/"//g;#remove quatation marks
+	my @cols = split /;/, $line;
+	foreach my $col (@cols){#this will make a key->field pair for each gene id in the cluster so the cluster will be represented as many times as there are genes, this is necessary because we don't know which gene will be in the recip file but we will need to account for this when we make the combined file
 		if(!exists $clusthsh{$col}){
-			$clusthsh{$col} = $spp;
+			$clusthsh{$col} = $line;
 		}else{
-			$clusthsh{$col}++;
+			#print "$col\n";
+			$n++;
 		}
 	}	
 }
 #go through each line of the list file and check for a matching cluster 
 while (my $line = <LIST>){
-	chomp($line)
+	chomp($line);
 	my @clusts;#shell for all clusters found
 	my @cols = split /;/, $line;
 	foreach my $geneid (@cols){#go through each gene id and check for a matching cluster
-		if(exists $clusthsh{$geneid}{
+		if(exists $clusthsh{$geneid}){
 			push @clusts, $clusthsh{$geneid};#if there is a cluster with the gene id add it to the clusts array
 		}
 	}
@@ -49,15 +54,33 @@ while (my $line = <LIST>){
 			push @unique, $value;
 		}
 	}
-	print OUT "$line";#print the line from the recipbesthits.list file
+	
+	#create array of geneIDs to find only unique IDs before printing
+	my @outgenes = split /;/, $line;
+	
 	foreach my $spp (@unique){
-		print OUT ";$spp";#print each unique cluster associated with that line
+		my @cols = split /;/, $spp;
+		foreach my $sp (@cols){
+			push @outgenes, $sp;#print each unique cluster associated with that line
+		}
 	}
+	#find only the unique genes
+	my @uniquegenes;
+	my %seenids;
+	foreach my $id (@outgenes) {
+		if (! $seenids{$id}++ ) {
+			push @uniquegenes, $id;
+		}
+	}
+	print scalar @outgenes,"\t",scalar @uniquegenes,"\n";
+	print OUT join(";",@uniquegenes);#print the line from the recipbesthits.list file
+	print KEY scalar @uniquegenes, "\n";
 	print OUT "\n";
 }
 
-
+print $n;
 
 close(LIST);
 close(CLUST);
 close(OUT);
+close(KEY);

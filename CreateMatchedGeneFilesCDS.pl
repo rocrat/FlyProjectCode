@@ -161,141 +161,39 @@ while (my $line = <INFIL>){
 	my %spphsh;
 	my %fastahsh;
 	my $filename;
-	if($line=~/dmel\.(FBgn\d+)/{  
+	if($line=~/Dmel\.(FBgn\d+),FBpp\d+/){  
 		$filename = $1."V4";#names the outgoing fasta file with Dmel anchor geneID
 	}
 	#first need to parse out the row name
-	$line =~ s/\d+,//;
+	#$line =~ s/\d+,//;
 	my @cols = split /;/, $line;
 	my $numspp = 0; #counter for the number of species in the fasta file (to be printed in the key)
 	my $spplist = "";#initiate string to be printed in species key
-	
+	open (NFIL,">$filename.fasta");
+
 	#use species ids at start of id to identify appropriate columns and keep track of the number of species included on a line
 	foreach my $geneid (@cols){#loop through each entry, identify the gene id and print the sequence in the fasta file
+	if($geneid !~ /^\d+/){
+		
 		my $dmelgene;
 		my $dmelpep;# peptide id;
-		if($geneid =~ /(dmel)\.(.)/{
-			my @dmelcols = split /,/, $2;
-			$dmelgene = $dmelcols[0];
-			$dmelpep = $dmelcols[1];
+		if($geneid =~ /(Dmel)\./){
+			if($geneid =~ /(FBgn\d+),(FBpp\d+)/){
+				$dmelgene = $1;
+				$dmelpep = $2;
+			}
 			if(!exists $spphsh{$1}){
 				$spphsh{$1} = 1;
 			}else{
 				$spphsh{$1}++;
 			}
-		}	
-		my $dbiid;
-		if($geneid =~ /(dbia\.)(.)/{
-			$dbiid = substr($2,0,-3)."-RA";
-			if(!exists $spphsh{$1}){
-				$spphsh{$1} = 1;
+			#get sequences
+			my $dmelseq;
+			if(exists $dmelHC{$dmelpep}){
+				$dmelseq = $dmelHC{$dmelpep}; 
 			}else{
-				$spphsh{$1}++;
+				$dmelseq = $dmelHC{$dmelgene};
 			}
-		}
-		my $dgrigene;
-		my $dgripep;
-		if($geneid =~ /(dgri\.)(.)/{
-			$dgriid = $2;
-			$dgrigene = $dgriH{$2};#get the gene id from the peptide id in the list file
-			if(!exists $spphsh{$1}){
-				$spphsh{$1} = 1;
-			}else{
-				$spphsh{$1}++;
-			}
-		}
-		my $dmogene;
-		my $dmoid;
-		if($geneid =~ /(dmoj\.)(.)/{
-			$dmoid = $2;
-			$dmogene = $dmojH{$2};#get the gene id from the peptide id in the list file
-			if(!exists $spphsh{$1}){
-				$spphsh{$1} = 1;
-			}else{
-				$spphsh{$1}++;
-			}
-		}
-		my $dpsegene;
-		my $dpseid;
-		if($geneid =~ /(dpse\.)(.)/{
-			$dpseid = $2;
-			$dpsegene = $dpseH{$2};#get the gene id from the peptide id in the list file
-			if(!exists $spphsh{$1}){
-				$spphsh{$1} = 1;
-			}else{
-				$spphsh{$1}++;
-			}
-		}
-		my $dsuzid;
-		if($geneid =~ /(dsuz\.)(.)/{
-			$dsuzid = $2;
-			if(!exists $spphsh{$1}){
-				$spphsh{$1} = 1;
-			}else{
-				$spphsh{$1}++;
-			}
-		}
-		my $dyakgene = $dyakH{$cols[6]};
-		my $dyakid = $cols[6];
-		if($geneid =~ /(dyak\.)(.)/{
-			$dyakid = $2;
-			$dyakgene = $dyakH{$2};#get the gene id from the peptide id in the list file
-			if(!exists $spphsh{$1}){
-				$spphsh{$1} = 1;
-			}else{
-				$spphsh{$1}++;
-			}
-		}
-		my $sflaid;
-		if($geneid =~ /(sfla\.)(.)/{
-			$sflaid = $2;
-			if(!exists $spphsh{$1}){
-				$spphsh{$1} = 1;
-			}else{
-				$spphsh{$1}++;
-			}
-		}
-		#get sequences
-		my $dmelseq;
-		if(exists $dmelHC{$dmelpep}){
-			$dmelseq = $dmelHC{$dmelpep}; 
-		}else{
-			$dmelseq = $dmelHC{$dmelgene};
-		}
-	
-		my $dbiseq = $dbi->get_Seq_by_id($dbiid);# Dbia is a little difference than the other spp's
-		$dbiid = substr($dbiid, 0, 9);
-		my $dgriseq; 
-		#try to get the sequences
-		if(exists $dgriHC{$dgriid}){
-			$dgriseq = $dgriHC{$dgriid}; 
-		}else{
-			$dgriseq = $dgriHC{$dgrigene};
-		}
-		my $dmoseq; 
-		if(exists $dmojHC{$dmoid}){
-			$dmoseq = $dmojHC{$dmoid}; 
-		}else{
-			$dmoseq = $dmojHC{$dmogene};
-		}
-		my $dpseseq;
-		if(exists $dpseHC{$dpseid}){
-			$dpseseq = $dpseHC{$dpseid}; 
-		}else{
-			$dpseseq = $dpseHC{$dpsegene};
-		}
-		my $dsuseq = $dsuzHC{$dsuzid}; 
-	
-		my $dyakseq; 
-		if(exists $dyakHC{$dyakid}){
-			$dyakseq = $dyakHC{$dyakid}; 
-		}else{
-			$dyakseq = $dyakHC{$dyakgene};
-		}
-		my $sflaseq = $sflaHC{$sflaid};
-		#print sequences to file
-		open (NFIL,">$filename.fasta");
-	
 		if (defined $dmelseq){
 			print NFIL ">$dmelgene,Dmel\n";
 			print NFIL $dmelseq,;
@@ -307,6 +205,16 @@ while (my $line = <INFIL>){
 				$fastahsh{"Dmel"} = 1;
 			}
 		}
+		}	
+		my $dbiid;
+		if($geneid =~ /(Dbia)\./){
+			$dbiid = substr($geneid,5,-3)."-RA";
+			if(!exists $spphsh{$1}){
+				$spphsh{$1} = 1;
+			}else{
+				$spphsh{$1}++;
+			}
+		my $dbiseq = $dbi->get_Seq_by_id($dbiid);# Dbia is a little difference than the other spp's
 		if (defined $dbiseq){
 			print NFIL ">$dbiid,Dbia\n";
 			print NFIL $dbiseq->seq,"\n";
@@ -318,17 +226,53 @@ while (my $line = <INFIL>){
 				$fastahsh{"Dbia"} = 1;
 			}
 		}
-		if (defined $dgriseq){
-			print NFIL ">$dgriid,Dgri\n";
-			print NFIL $dgriseq;
-			$numspp++;
-			$spplist = $spplist.",Dgri";
-			if(!exists $fastahsh{"Dgri"}){
-				$fastahsh{"Dgri"} = 1;
+		}
+		my $dgrigene;
+		my $dgriid;
+		if($geneid =~ /(Dgri)\./){
+			$dgriid = substr($geneid,5);
+			print "$dgriid \n";
+			$dgrigene = $dgriH{$dgriid};#get the gene id from the peptide id in the list file
+			if(!exists $spphsh{$1}){
+				$spphsh{$1} = 1;
 			}else{
-				$fastahsh{"Dgri"} = 1;
+				$spphsh{$1}++;
+			}
+			my $dgriseq; 
+			#try to get the sequences
+			if(exists $dgriHC{$dgriid}){
+				$dgriseq = $dgriHC{$dgriid}; 
+			}else{
+				$dgriseq = $dgriHC{$dgrigene};
+			}
+			if (defined $dgriseq){
+				print NFIL ">$dgriid,Dgri\n";
+				print NFIL $dgriseq;
+				$numspp++;
+				$spplist = $spplist.",Dgri";
+				if(!exists $fastahsh{"Dgri"}){
+					$fastahsh{"Dgri"} = 1;
+				}else{
+					$fastahsh{"Dgri"} = 1;
+				}
 			}
 		}
+		my $dmogene;
+		my $dmoid;
+		if($geneid =~ /(Dmoj)\./){
+			$dmoid = substr($geneid,5);
+			$dmogene = $dmojH{$dmoid};#get the gene id from the peptide id in the list file
+			if(!exists $spphsh{$1}){
+				$spphsh{$1} = 1;
+			}else{
+				$spphsh{$1}++;
+			}
+			my $dmoseq; 
+			if(exists $dmojHC{$dmoid}){
+				$dmoseq = $dmojHC{$dmoid}; 
+			}else{
+				$dmoseq = $dmojHC{$dmogene};
+			}
 		if (defined $dmoseq){
 			print NFIL ">$dmoid,Dmoj\n";
 			print NFIL $dmoseq;
@@ -340,6 +284,23 @@ while (my $line = <INFIL>){
 				$fastahsh{"Dmoj"} = 1;
 			}
 		}
+		}
+		my $dpsegene;
+		my $dpseid;
+		if($geneid =~ /(Dpse)\./){
+			$dpseid = substr($geneid,5);
+			$dpsegene = $dpseH{$dpseid};#get the gene id from the peptide id in the list file
+			if(!exists $spphsh{$1}){
+				$spphsh{$1} = 1;
+			}else{
+				$spphsh{$1}++;
+			}
+			my $dpseseq;
+			if(exists $dpseHC{$dpseid}){
+				$dpseseq = $dpseHC{$dpseid}; 
+			}else{
+				$dpseseq = $dpseHC{$dpsegene};
+			}
 		if (defined $dpseseq){
 			print NFIL ">$dpseid,Dpse\n";
 			print NFIL $dpseseq;
@@ -351,41 +312,79 @@ while (my $line = <INFIL>){
 				$fastahsh{"Dpse"} = 1;
 			}
 		}
-		if (defined $dsuseq){
-			print NFIL ">$dsuzid,Dsuz\n";
-			print NFIL $dsuseq;
+		}
+		my $dsuzid;
+		if($geneid =~ /(Dsuz)\./){
+			$dsuzid = substr($geneid,5);
+			if(!exists $spphsh{$1}){
+				$spphsh{$1} = 1;
+			}else{
+				$spphsh{$1}++;
+			}
+			my $dsuseq = $dsuzHC{$dsuzid}; 
+			if (defined $dsuseq){
+				print NFIL ">$dsuzid,Dsuz\n";
+				print NFIL $dsuseq;
+				$numspp++;
+				$spplist = $spplist.",Dsuz";
+				if(!exists $fastahsh{"Dsuz"}){
+					$fastahsh{"Dsuz"} = 1;
+				}else{
+					$fastahsh{"Dsuz"} = 1;
+				}
+			}
+		}
+		my $dyakgene; 
+		my $dyakid;
+		if($geneid =~ /(Dyak)\./){
+			$dyakid = substr($geneid,5);
+			$dyakgene = $dyakH{$dyakid};#get the gene id from the peptide id in the list file
+			if(!exists $spphsh{$1}){
+				$spphsh{$1} = 1;
+			}else{
+				$spphsh{$1}++;
+			}
+			my $dyakseq; 
+			if(exists $dyakHC{$dyakid}){
+				$dyakseq = $dyakHC{$dyakid}; 
+			}else{
+				$dyakseq = $dyakHC{$dyakgene};
+			}
+			if (defined $dyakseq){
+			print NFIL ">$dyakid,Dyak\n";
+			print NFIL $dyakseq;
 			$numspp++;
-			$spplist = $spplist.",Dsuz";
-			if(!exists $fastahsh{"Dsuz"}){
-				$fastahsh{"Dsuz"} = 1;
-			}else{
-				$fastahsh{"Dsuz"} = 1;
+			$spplist = $spplist.",Dyak";
+				if(!exists $fastahsh{"Dyak"}){
+					$fastahsh{"Dyak"} = 1;
+				}else{
+					$fastahsh{"Dyak"} = 1;
+				}
 			}
 		}
-		if (defined $dyakseq){
-		print NFIL ">$dyakid,Dyak\n";
-		print NFIL $dyakseq;
-		$numspp++;
-		$spplist = $spplist.",Dyak";
-			if(!exists $fastahsh{"Dyak"}){
-				$fastahsh{"Dyak"} = 1;
+		my $sflaid;
+		if($geneid =~ /(Sfla)\./){
+			$sflaid = substr($geneid,5);
+			if(!exists $spphsh{$1}){
+				$spphsh{$1} = 1;
 			}else{
-				$fastahsh{"Dyak"} = 1;
+				$spphsh{$1}++;
+			}
+			my $sflaseq = $sflaHC{$sflaid};
+			if (defined $sflaseq){
+				print NFIL ">$n,Sfla\n";
+				print NFIL $sflaseq;
+				$numspp++;
+				$spplist = $spplist.",Sfla";
+				if(!exists $fastahsh{"Sfla"}){
+					$fastahsh{"Sfla"} = 1;
+				}else{
+					$fastahsh{"Sfla"} = 1;
+				}
 			}
 		}
-		if (defined $sflaseq){
-			print NFIL ">$n,Sfla\n";
-			print NFIL $sflaseq;
-			$numspp++;
-			$spplist = $spplist.",Sfla";
-			if(!exists $fastahsh{"Sfla"}){
-				$fastahsh{"Sfla"} = 1;
-			}else{
-				$fastahsh{"Sfla"} = 1;
-			}
-		}
-	
 		$n = $n+1;
+	}
 	}#close loop through each column
 	
 	print CNTFIL "$filename,$numspp\n";
