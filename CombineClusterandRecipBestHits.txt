@@ -1,0 +1,7 @@
+#! usr/bin/env perl
+
+use strict;
+use warnings;
+
+#This script is designed to combine a clustering result with a reciprocal best hit .list file
+

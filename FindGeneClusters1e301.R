@@ -16,5 +16,5 @@ linkmat<-matrix("",length(lc$clusters),1)
 for(i in 1:length(lc$clusters)){
   linkmat[i,1]<-paste(getNodesIn(lc,clusterids=i),collapse=";")
 }
-write.csv(linkmat,"ClusterMatrix.csv",)
+write.csv(linkmat,"ClusterMatrix1e301.csv")
 save.image(file="/xdisk/rlapoint/LinkMatrix1e301.Rdata")
