@@ -8,5 +8,6 @@ out.dat<-data.frame(paste0("Dmel.",dat$V1),
                     paste0("Dsuz.",dat$V6),
                     paste0("Dyak.",dat$V7),
                     paste0("Sfla.",dat$V8))
+out.dat$empty<-""
 library(MASS)
 write.table(out.dat,file="C:\\Users\\DominicLaptop\\Documents\\Work\\FlyEvolution\\FastaFilesForAlignmentV1\\ConvertedRecipListV4.list",row.names=FALSE,col.names=FALSE,quote=FALSE,sep=";")
