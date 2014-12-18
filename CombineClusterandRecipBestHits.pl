@@ -31,7 +31,7 @@ while (my $line=<CLUST>){
 		if(!exists $clusthsh{$col}){
 			$clusthsh{$col} = $line;
 		}else{
-			#print "$col\n";
+			#$clusthsh{$col} = $clusthsh{$col}.";".$line;
 			$n++;
 		}
 	}	

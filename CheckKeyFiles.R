@@ -1,9 +1,9 @@
-rcl<-read.table("C:\\Users\\DominicLaptop\\Documents\\Work\\FlyEvolution\\FastaFilesForAlignmentV1\\CombinedRecipClust.key")
+rcl<-read.table("C:\\Users\\DominicLaptop\\Documents\\Work\\FlyEvolution\\FastaFilesForAlignmentV1\\CombinedRecipClustV5.key")
 library(MASS)
 truehist(rcl$V1,xlab="Number of genes/file after adding clusters")
 sum(rcl$V1>60)
 spnk<-read.csv("C:\\Users\\DominicLaptop\\Documents\\Work\\FlyEvolution\\FastaFilesForAlignmentV1\\SppNumberKey.csv",header=FALSE)
-funq<-read.table("C:\\Users\\DominicLaptop\\Documents\\Work\\FlyEvolution\\FastaFilesForAlignmentV1\\FastaUniqueSPPV4",header=FALSE,sep="\n")
+funq<-read.table("C:\\Users\\DominicLaptop\\Documents\\Work\\FlyEvolution\\FastaFilesForAlignmentV1\\FastaUniqueSPPV5",header=FALSE,sep="\n")
 for (i in 1:dim(funq)[1]){
   funq$num[i]<-strsplit(x=as.character(funq$V1)[i],split=";")[[1]][1]
 }
