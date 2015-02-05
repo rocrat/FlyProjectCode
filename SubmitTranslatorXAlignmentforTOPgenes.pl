@@ -3,9 +3,19 @@ use warnings;
 use strict;
 
 #This script creates a PBS script to align all the sequences in a particular file folder using TranslatorX
+open(LIST,"finalGeneList.csv");
+my @files;
+while (my $file = <LIST>){#make list of top genes to submit translatorX script for
+	chomp($file);
+	if ($file =~ /(FBgn\d+)/){
+		$file = substr($file,1,11);
+		my $id = $file."V5.fasta";
+		push @files, $id;
+	}
+}
 
 my $folder = $ARGV[0]; #the first argument is the path of the folder where the fasta files live
-my @files = `ls $folder | grep '.\.fasta'`;
+
 my $outfolder ="/xdisk/rlapoint/TranslatorClustAlignmentsV4";
 open(OUT,">submitClustAlignmentsV4.pbs");
 print OUT "#!/bin/bash\n";
@@ -21,7 +31,7 @@ print OUT "#PBS -q standard\n";
 print OUT "#PBS -M dlaroche\@email.arizona.edu\n\n";
 print OUT "cd \$PBS_O_WORKDIR # this cd's into the directory you submitted the script from\n";
 print OUT "module load muscle\n";
-	
+
 for my $file (@files){
 	chomp($file);
 	my $outfile = substr($file,0,12);
@@ -31,5 +41,4 @@ for my $file (@files){
 print OUT "wait";
 close(OUT);
 
-	
-	
+
