@@ -40,6 +40,7 @@ for(i in 1:length(fastaFiles)){
   df$position<-factor(1:dim(df)[1])
   longdf<-reshape(df,varying=c("Dgri","Dmoj","Dmel","Dbia","Dyak","Dpse","Dsuz","Sfla"),times=c("Dgri","Dmoj","Dmel","Dbia","Dyak","Dpse","Dsuz","Sfla"),direction="long",v.names="AA")
   longdf$time<-factor(longdf$time,levels=c("Sfla","Dsuz","Dgri","Dmoj","Dmel","Dbia","Dyak","Dpse"))
-  plot1<-ggplot(data=longdf,aes(x=position,y=time))+geom_tile(aes(fill=AA,colour=convergence))+ylab("Species")+xlab("AA Postion")+ggtitle(sub(".+(FBgn\\d+)V.+","\\1",fastaFiles[i],perl=TRUE))+theme(legend.position="bottom")+scale_colour_manual(values=c("white","red"))
-  ggsave(filename=paste0("C:/Projects/FlyEvolution/Plots/",sub(".+(FBgn\\d+)V.+","\\1",fastaFiles[i],perl=TRUE),".pdf"),plot=plot1,width=as.integer(.3*length(levels(df$position))),height=4,units="in",limitsize=FALSE)
+  plot1<-ggplot(data=longdf,aes(x=position,y=time))+geom_tile(aes(fill=convergence),alpha=.5)+ylab("Species")+xlab("AA Postion")+ggtitle(sub(".+(FBgn\\d+)V.+","\\1",fastaFiles[i],perl=TRUE))+scale_fill_manual(values=c("grey","red"))+geom_text(aes(label=AA))+theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),legend.position="bottom")
+  
+  ggsave(filename=paste0("C:/Projects/FlyEvolution/NewPlots/",sub(".+(FBgn\\d+)V.+","\\1",fastaFiles[i],perl=TRUE),".pdf"),plot=plot1,width=as.integer(.3*length(levels(df$position))),height=4,units="in",limitsize=FALSE)
 }
