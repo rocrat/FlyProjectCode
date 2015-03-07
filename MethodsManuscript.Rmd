@@ -1,0 +1,12 @@
+---
+title: "Robust detection of convergent evolution at the molecular level"
+author: "Dominic LaRoche"
+date: "Wednesday, March 04, 2015"
+output: word_document
+---
+
+#Introduction
+
+Convergent evolution is process in which two organisms develop the same phenotypic functionality which a common ancestor did not have.  The recent advances in genome sequencing have allowed the genomes of many organisms to become available in recent years and this has led to the search for the molecular basis of convergent phenotypes.  The identification of molecular convergence can reveal the genetic basis for complex traits.  Moreover, the mechanism of convergent evolution can be better understood.  Although studies of convergent evolution have been focused on the convergence of phenotypes among species these same techniques could applied to detecting the evolution of individual cell lines within an organism, e.g. cancer cells (citation here).  This could potentially lead to a reduced false-discovery rate associated with Genome Wide Association Studies (GWAS) and faster development of targeted therapies for any disease which has a genetic etiology.
+
+Several different methods have been employed for detecting molecular convergence among organisms which display convergent phenotypes.  Parker et al. (2014) use a phylogenetic screening mechanism followed by several 
