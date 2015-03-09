@@ -1,15 +1,15 @@
 
 ### Parameters
-sitesDir <- "~/projects/flyCE/garliNoSnothaV3/"
+# sitesDir <- "~/projects/flyCE/garliNoSnothaV3/"
 #sitesDir <- "~/projects/flyCE/garliNoSnothaAAV3/"
-
+sitesDir <- "C:/Projects/FlyEvolution/garliNonsenseV1/"
 ###load packages
-require(snowfall)
-require(parallel)
+library(snowfall)
+library(parallel)
 
 #read in files
 sitesFiles <- dir(sitesDir,full.names = T)
-
+sitesFiles <- sitesFiles[which(grepl("sitelikes",sitesFiles))]
 ##### Compute P value for each gene
 ## function testing parameters
 #tmpFile <- sitesFiles[1]
@@ -36,6 +36,7 @@ compute.gene.pvalue <- function(tmpFile){
 #set.seed(44)
 #n <- 100
 #tmpFiles <- sitesFiles[sample(1:length(sitesFiles),n)] 
+# tmpFiles<-tmpFiles[which(grepl("sitelikes",tmpFiles))]
 start.time <- proc.time()
 
 ## include starting parallel
@@ -43,34 +44,44 @@ sfInit(parallel=TRUE, cpus=detectCores())
 sfExport("compute.gene.pvalue")
 
 pvalues <- sfSapply(sitesFiles, fun=compute.gene.pvalue)    
+# pvalues <- sfSapply(tmpFiles, fun=compute.gene.pvalue)    
 
 sfStop()
 (end.time <- proc.time() - start.time)
 
 ###rename and check out distribution
-newNames <- unlist(lapply(strsplit(unlist(lapply(strsplit(colnames(pvalues),"//"),function(tmp) tmp[2])),"\\."),function(tmp) tmp[1]))
-newNames <- gsub("V$","",newNames)
+# newNames <- unlist(lapply(strsplit(unlist(lapply(strsplit(colnames(pvalues),"//"),function(tmp) tmp[2])),"\\."),function(tmp) tmp[1]))
+newNames <- gsub(".+(FBgn\\d+)V.+","\\1",colnames(pvalues))
+# newNames <- gsub("V$","",newNames)
 colnames(pvalues) <- newNames
 
-qplot(pvalues[1,])
+library(ggplot2)
+###check out negative pvalues
+p.data <- data.frame(t(pvalues))
 
-## unadjusted 289 genes, 258 for AA
-length(pvalues[pvalues[1,] < 0.05])
+write.csv(p.data,file="allGenesDSSLSstats.csv")
+
+qplot(p.data$pvalue)
+
+## unadjusted threshold 289 genes, 258 for AA
+nrow(p.data[p.data$pvalue < 0.05,])
 
 ## adjusted pvalues (bonferroni)
-adj.pvalues <- pvalues
-adj.pvalues[1,] <- pvalues[1,]*length(pvalues[1,])
-length(adj.pvalues[1,][adj.pvalues[1,] < 0.05])
-length(adj.pvalues[1,][adj.pvalues[1,] < 0.01])
-length(adj.pvalues[1,][adj.pvalues[1,] < 0.001])
+adj.pvalues <- p.data
+adj.pvalues$bon.pvalue <- adj.pvalues$pvalue*nrow(p.data)
+adj.pvalues$bon.pvalue[adj.pvalues$bon.pvalue > 1] <- 1 
+adj.pvalues$fdr.pvalue <- p.adjust(adj.pvalues$pvalue,method="BH")
 
-## 93 at bonferroni 5%, 80 at 1%, 68 at .1%
-## for AA, 90, 82, 69
-adj.pvalues <- adj.pvalues[,order(adj.pvalues[1,])]
-## cap at 1
-adj.pvalues[1,][adj.pvalues[1,] > 1] <- 1
+for (i in c(0.05, 0.01, 0.001)) {
+  print(paste("There are",nrow(adj.pvalues[adj.pvalues$bon.pvalue < i,]),"genes at bon",i))
+  print(paste("There are",nrow(adj.pvalues[adj.pvalues$fdr.pvalue < i,]),"genes at fdr",i))
+}
+
+adj.pvalues <- adj.pvalues[order(adj.pvalues$pvalue),]
+
+
 ## reshape
-adj.data <- data.frame(t(adj.pvalues))
+adj.data <- adj.pvalues
 adj.data <- cbind(row.names(adj.data),adj.data)
 names(adj.data) <- c("GeneID",names(adj.data)[-1])
 
@@ -85,16 +96,19 @@ names(adj.data) <- c("GeneID",names(adj.data)[-1])
 #write.table(adj.data[1:length(adj.pvalues[1,][adj.pvalues[1,] < 0.05]),],file="wilcoxSignifPvaluesNoSnothaAAV3.txt",sep="\t",quote=F,row.names=F)
 
 ##write significant and filter
-sig.data <- adj.data[1:length(adj.pvalues[1,][adj.pvalues[1,] < 0.05]),]
-sig.data <- sig.data[sig.data$medDSSLS >= 0.1,]
+#sig.data <- adj.data[1:length(adj.pvalues[1,][adj.pvalues[1,] < 0.05]),]
+#sig.data <- sig.data[sig.data$medDSSLS >= 0.1,]
 
 #write.table(sig.data,file="wilcoxFilteredGenesNoSnothaV3.txt",sep="\t",quote=F,row.names=F)
-write.table(sig.data,file="wilcoxFilteredGenesNoSnothaAAV3.txt",sep="\t",quote=F,row.names=F)
+write.csv(adj.data,file="nonsenseSSLSresults.csv",quote=F,row.names=F)
+write.csv(adj.data[which(adj.data$pvalue<0.05),],file="FinalnonsenseSSLSresults.csv",quote=F,row.names=F)
+write.csv(adj.data[which(adj.data$pvalue<0.05),1],file="FinalnonsenseGenelist.csv",quote=F,row.names=F)
 
 ##take a look at a couple best hits
 ##### Compute P value for each gene
 ## function testing parameters
-tmpFile <- sitesFiles[grep(names(adj.pvalues)[1],sitesFiles)]
+spp<-row.names(adj.pvalues)[1]
+tmpFile <- sitesFiles[which(grepl(spp,sitesFiles))]
 
 tmpData <- read.table(tmpFile,header = T,sep = "\t",fill=T)
 ## compute deltaSSLS for given gene
@@ -105,7 +119,7 @@ newData <- data.frame(H0=tmpData$X.lnL.1[1:numBP],H1=tmpData$X.lnL.1[(numBP+2):(
 
 p <- ggplot(data=newData,aes(x=-H0,y=-H1))
 p + geom_abline(slope=1,color="red") + geom_point() + labs(x="Ln Likelihood Under the Species Tree",
-                                   y="Ln Likelihood Under the CE Tree",title="Each Site of FBgn0040290\nAbove the Reference Line is in Favor of CE")
+                                                           y="Ln Likelihood Under the CE Tree",title=paste("Each Site of",spp ,"\nAbove the Reference Line is in Favor of CE"))
 
 qplot(newData$H0-newData$H1)
 
@@ -114,22 +128,33 @@ summary(newData$H0-newData$H1)
 
 
 qplot(x=as.numeric(row.names(newData)),newData$H0-newData$H1) + geom_hline(yintercept=0,color="red")+ labs(x="Site (NT position)",
-                                   y="Difference in Site Specific Likelihood Score (SSLS)",title="For Gene FBgn0040290\nAbove the Reference Line is in Favor of CE")
+                                                                                                           y="Difference in Site Specific Likelihood Score (SSLS)",title=paste("For Gene ",spp,"\nAbove the Reference Line is in Favor of CE"))
 
 ## problem with very little variation genes
 ## produce medians
 
 sapply(siteFiles, function(tmpFile) {
-    tmpFile <- sitesFiles[grep(names(adj.pvalues)[1],sitesFiles)]
-
-    tmpData <- read.table(tmpFile,header = T,sep = "\t",fill=T)
-    ## compute deltaSSLS for given gene
-    numBP <- max(tmpData$Site,na.rm = T)
-    myMed <- median(tmpData$X.lnL.1[1:numBP]-tmpData$X.lnL.1[(numBP+2):(nrow(tmpData)-1)])c
-    mySD <- sd(tmpData$X.lnL.1[1:numBP]-tmpData$X.lnL.1[(numBP+2):(nrow(tmpData)-1)])
-    str(tmpData)
+  tmpFile <- sitesFiles[grep(names(adj.pvalues)[1],sitesFiles)]
+  
+  tmpData <- read.table(tmpFile,header = T,sep = "\t",fill=T)
+  ## compute deltaSSLS for given gene
+  numBP <- max(tmpData$Site,na.rm = T)
+  myMed <- median(tmpData$X.lnL.1[1:numBP]-tmpData$X.lnL.1[(numBP+2):(nrow(tmpData)-1)])c
+  mySD <- sd(tmpData$X.lnL.1[1:numBP]-tmpData$X.lnL.1[(numBP+2):(nrow(tmpData)-1)])
+  str(tmpData)
 })
-    
-    
-    
 
+
+
+### combine with drift, tree perm results
+
+full.data <- read.table("~/projects/flyCE/driftTreeNoSnothaV3.txt",header = T,sep="\t")
+numTrees <- 150
+numDrift <- 100
+full.data$TreePvalue[full.data$TreePvalue == 0] <- 1/(numTrees+1)
+full.data$DriftPvalue[full.data$DriftPvalue == 0] <- 1/(numDrift+1)
+
+### combine with full gene results
+str(adj.data)
+p.data <- merge(adj.data,full.data[,c(1,5,6)])
+write.table(p.data,file="finalGeneSSLSresults.txt",sep="\t",quote=F,row.names=F)
