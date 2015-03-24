@@ -6,16 +6,20 @@ my @filelist = `ls /xdisk/rlapoint/garliConfNoSnothaV3/ `;
 my %tophsh;
 open(TOP,"FinalnonsenseGeneList.csv");
 while (my $gene = <TOP>){
-	chomp($gene);
+	$gene = substr($gene,0,11);
 	if($gene =~ /FBgn/){
-		$tophsh{$gene} = $gene;
+		if(!exists $tophsh{$gene}){
+			$tophsh{$gene}++;
+			print "$tophsh{$gene}";
+		}
 		if(exists $tophsh{$gene}){
-		#print "$tophsh{$gene}\n";
+			
+			print "$gene is found \n";
 		}
 	}
 }
 my @glist = keys %tophsh;
-foreach my $gen (@glist){
+foreach my $gen (@glist){#Correct GeneIDs came out of this
 	#print "$gen\n";
 }
 #create 5 pbs scripts for submitting many many garli commands
@@ -39,17 +43,18 @@ for (my $i = 1; $i <= 1; $i++){#just changed to 1 iteration
 #create conf files and populate 5 submission scripts
 my $count = 0;
 my $numfls = $#filelist;
-print "$numfls\n";
+print "There are $numfls in the old conf directory\n";
 foreach my $oldfile (@filelist){
 	chomp($oldfile);
 	my $geneid;
 	if($oldfile =~ /(FBgn\d{7})/){
 		$geneid = $1;
-		#print "$geneid\n";
+		#print "$geneid\n";#this is right
 	}
-	#print "$tophsh{$geneid}\n";
-	if(exists $tophsh{$geneid}){
-	print "$geneid found \n";
+	
+	if(exists $tophsh{$geneid}){#not making it into this loop for some reason
+		print "$geneid found \n";
+		$count++;
 		open(INFIL,"/xdisk/rlapoint/garliConfNoSnothaV3/".$oldfile);
 		open(OUTFIL,">/xdisk/rlapoint/simTreeConfNonsenseV1/".$oldfile);
 		while (my $line = <INFIL>){
@@ -63,8 +68,6 @@ foreach my $oldfile (@filelist){
 			}
 		}
 		print SUB1 "Garli-2.01 /xdisk/rlapoint/simTreeConfNonsenseV1/$oldfile &\n";
-	
-		$count++;
 		close (INFIL);
 		close (OUTFIL);
 	}
@@ -75,3 +78,4 @@ for (my $i = 1; $i <= 1; $i++){
 	print $sub "wait\n";
 	close ($sub);
 }
+print "Made $count .conf files\n";

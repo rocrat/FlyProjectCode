@@ -1,7 +1,7 @@
 #get random trees for not all possible combo route
 
-notSpecial<-c("Dmelanogaster","Dyakuba","Dbiarmipes","Dpseudoobscura","Sflava","Dmojavensis")
-special<-c("Dgrimshawi","Dsuzukii")
+notSpecial<-c("Dmel","Dyak","Dbia","Dpse","Sfla","Dmoj")
+special<-c("Dgri","Dsuz")
 #individual functions to produce permuted trees for each of 6 templates
 #swapping the the two species would create an additional 6 templates but 
 #I am not sure this is necessary
